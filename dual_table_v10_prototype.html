@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX PREDATOR V10 — DUAL TABLE PROTOTYPE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+/* PREMIUM DARK THEME - APEX V10 */
+:root {
+  --bg-main: #0B0E14;
+  --bg-panel: #131722;
+  --accent: #6D28D9;
+  --accent-glow: rgba(109, 40, 217, 0.4);
+  --hero: #3B82F6;
+  --text-main: #F8FAFC;
+  --text-muted: #64748B;
+  --felt-bg: radial-gradient(ellipse at center, #115E59 0%, #064E3B 70%, #022C22 100%);
+  --felt-border: #047857;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+body { background: var(--bg-main); color: var(--text-main); font-family: 'Outfit', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* HEADER */
+.header { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: rgba(19, 23, 34, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+.logo { font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 8px; }
+.logo span { color: var(--accent); }
+.status-badge { background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+/* GRID DUAL TABLE */
+.workstation { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; height: calc(100vh - 60px); }
+@media (max-width: 1000px) { .workstation { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; overflow-y: auto; } }
+
+.table-panel { background: var(--bg-panel); border-radius: 24px; border: 1px solid rgba(255,255,255,0.03); position: relative; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+.table-header { padding: 16px 24px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: center;}
+.table-title { font-size: 16px; font-weight: 800; color: var(--text-muted); }
+.fast-actions { display: flex; gap: 10px; }
+.btn-icon { background: rgba(255,255,255,0.05); border: none; color: #fff; width: 36px; height: 36px; border-radius: 12px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; }
+.btn-icon:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
+
+/* POKER FELT & SEATS */
+.felt-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; perspective: 1000px; padding: 40px; }
+.felt { width: 100%; max-width: 480px; height: 260px; background: var(--felt-bg); border-radius: 160px / 90px; border: 6px solid var(--felt-border); box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,0,0,0.6); position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; transform: rotateX(15deg); }
+
+.pot-display { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; font-size: 18px; font-weight: 900; color: #FBBF24; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(251, 191, 36, 0.4); }
+.board { display: flex; gap: 8px; }
+.card-slot { width: 44px; height: 60px; background: rgba(0,0,0,0.4); border: 2px dashed rgba(255,255,255,0.15); border-radius: 8px; }
+
+.rotate-dealer-btn { position: absolute; bottom: 30px; background: linear-gradient(135deg, var(--accent), #4C1D95); border: none; color: white; font-family: 'Outfit'; font-size: 14px; font-weight: 800; padding: 10px 24px; border-radius: 30px; cursor: pointer; box-shadow: 0 10px 25px var(--accent-glow); transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+.rotate-dealer-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px var(--accent-glow); }
+
+.seat { position: absolute; width: 72px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.avatar { width: 54px; height: 54px; border-radius: 50%; background: #1E293B; border: 3px solid #334155; display: flex; justify-content: center; align-items: center; position: relative; }
+.seat.empty { opacity: 0.4; }
+
+.player-info { background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; margin-top: -8px; z-index: 2; width: 100%; text-align: center; }
+.p-name { font-size: 11px; font-weight: 800; color: #fff; }
+
+.dlr-btn { position: absolute; top: 0; right: 0; width: 20px; height: 20px; background: #EF4444; border-radius: 50%; border: 2px solid white; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 900; color: white; transform: rotate(-15deg); }
+.pos-pill { position: absolute; bottom: -6px; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; color: #000; }
+
+.controls { padding: 20px 24px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.02); display: flex; gap: 15px; }
+.input-group { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 15px; }
+.lbl { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block; }
+.massive-input { width: 100%; background: transparent; border: none; color: #fff; font-size: 24px; font-weight: 900; font-family: 'Outfit'; outline: none; }
+
+.pos-0 { top: 75%; left: -6%; }
+.pos-1 { top: -5%; left: 15%; }
+.pos-2 { top: -5%; right: 15%; }
+.pos-3 { top: 75%; right: -6%; }
+.pos-hero { bottom: -15%; left: 50%; transform: translateX(-50%); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">APEX PREDATOR <span>V10</span></div>
+  <div class="status-badge">● DUAL CORE ACTIVE</div>
+</div>
+
+<div class="workstation" id="workstation"></div>
+
+<script>
+const POS_LBL = {
+  6: [{id:'BTN',c:'#FBBF24'},{id:'SB',c:'#94A3B8'},{id:'BB',c:'#64748B'},{id:'UTG',c:'#F87171'},{id:'HJ',c:'#FB923C'},{id:'CO',c:'#4ADE80'}],
+  5: [{id:'BTN',c:'#FBBF24'},{id:'SB',c:'#94A3B8'},{id:'BB',c:'#64748B'},{id:'UTG',c:'#F87171'},{id:'CO',c:'#4ADE80'}],
+  4: [{id:'BTN',c:'#FBBF24'},{id:'SB',c:'#94A3B8'},{id:'BB',c:'#64748B'},{id:'CO',c:'#4ADE80'}],
+  3: [{id:'BTN',c:'#FBBF24'},{id:'SB',c:'#94A3B8'},{id:'BB',c:'#64748B'}],
+  2: [{id:'BTN',c:'#FBBF24'},{id:'BB',c:'#64748B'}]
+};
+
+class TableInstance {
+  constructor(cont, id, title) {
+    this.cont = cont;
+    this.id = id;
+    this.title = title;
+    this.seats = [
+      { id: 0, active: true, name: 'Villano 1' },
+      { id: 1, active: true, name: 'Villano 2' },
+      { id: 2, active: false, name: 'Vacío' },
+      { id: 3, active: true, name: 'Villano 3' },
+      { id: 4, active: true, name: 'Villano 4' },
+      { id: 5, active: true, name: 'HERO', isHero: true }
+    ];
+    this.dealerSeat = 3;
+    this.render();
+  }
+
+  calcPos() {
+    let act = [];
+    for(let i=0; i<6; i++) {
+       let idx = (this.dealerSeat + i) % 6;
+       if (this.seats[idx].active) act.push(idx);
+    }
+    let map = {};
+    const labels = POS_LBL[act.length] || POS_LBL[6];
+    act.forEach((idx, i) => { map[idx] = labels[i]; });
+    return map;
+  }
+
+  rotate() {
+    let nx = (this.dealerSeat + 1) % 6;
+    while(!this.seats[nx].active) nx = (nx + 1) % 6;
+    this.dealerSeat = nx;
+    this.render();
+  }
+
+  toggle(idx) {
+    if (this.seats[idx].isHero) return;
+    this.seats[idx].active = !this.seats[idx].active;
+    if (!this.seats[this.dealerSeat].active) this.rotate();
+    else this.render();
+  }
+
+  render() {
+    const posMap = this.calcPos();
+    let h = '<div class="table-panel"><div class="table-header"><div class="table-title">' + this.title + '</div></div>';
+    h += '<div class="felt-container"><div class="felt"><div class="pot-display">14.5 BB</div><div class="board"><div class="card-slot"></div><div class="card-slot"></div><div class="card-slot"></div></div>';
+    h += '<button class="rotate-dealer-btn" id="rot-' + this.id + '">Rotar Dealer 🔄</button>';
+
+    this.seats.forEach(s => {
+      const p = posMap[s.id];
+      const isD = (this.dealerSeat === s.id);
+      const cls = s.isHero ? 'pos-hero' : 'pos-' + s.id;
+      h += '<div class="seat ' + cls + ' ' + (!s.active?'empty':'') + '" id="s-' + this.id + '-' + s.id + '">';
+      h += '<div class="avatar">' + (s.isHero?'🕵️':'👤') + (isD?'<div class="dlr-btn">D</div>':'') + (s.active && p ? '<div class="pos-pill" style="background:' + p.c + '">' + p.id + '</div>' : '') + '</div>';
+      h += '<div class="player-info"><div class="p-name">' + (s.active?s.name:'Vacío') + '</div></div></div>';
+    });
+
+    h += '</div></div><div class="controls"><div class="input-group"><span class="lbl">Stack (BB)</span><input type="number" class="massive-input" value="100"></div></div></div>';
+    this.cont.innerHTML = h;
+    document.getElementById('rot-' + this.id).onclick = () => this.rotate();
+    this.seats.forEach(s => { document.getElementById('s-' + this.id + '-' + s.id).onclick = () => this.toggle(s.id); });
+  }
+}
+
+const ws = document.getElementById('workstation');
+const d1 = document.createElement('div'); const d2 = document.createElement('div');
+ws.appendChild(d1); ws.appendChild(d2);
+new TableInstance(d1, 't1', 'Mesa 1'); new TableInstance(d2, 't2', 'Mesa 2');
+</script>
+</body>
+</html>
